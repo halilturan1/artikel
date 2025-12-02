@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Der Die Das - Almanca Artikel Oyunu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .card-anim {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .card-anim:active {
+            transform: scale(0.95);
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .correct-pop {
+            animation: pop 0.4s;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        /* Article specific button styles */
+        .btn-der:hover { background-color: #2563eb; border-color: #1e40af; }
+        .btn-die:hover { background-color: #dc2626; border-color: #991b1b; }
+        .btn-das:hover { background-color: #16a34a; border-color: #166534; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-white p-4">
+
+    <!-- Game Container -->
+    <div class="w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
+        
+        <!-- Header / Stats -->
+        <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
+            <div class="flex flex-col items-center">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Skor</span>
+                <span id="score" class="text-2xl font-black text-slate-700">0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Seri</span>
+                <span id="streak" class="text-2xl font-black text-orange-500">0 🔥</span>
+            </div>
+        </div>
+
+        <!-- Question Area -->
+        <div class="p-8 flex flex-col items-center justify-center min-h-[250px] relative" id="card-area">
+            <div id="icon-display" class="text-6xl mb-4 transition-all duration-300">✏️</div>
+            <h1 id="word-display" class="text-4xl font-black mb-2 text-slate-800 text-center tracking-tight">Bleistift</h1>
+            <p id="translation-display" class="text-slate-500 font-medium text-lg bg-slate-100 px-3 py-1 rounded-full">Kurşun Kalem</p>
+            
+            <!-- Result Overlay (Hidden by default) -->
+            <div id="result-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center hidden z-10 rounded-xl">
+                <div id="result-icon" class="text-6xl mb-2">✅</div>
+                <h2 id="result-title" class="text-2xl font-bold mb-1">Doğru!</h2>
+                <p id="result-message" class="text-slate-600">Cevap: <span class="font-bold">Der</span> Bleistift</p>
+                <button onclick="nextQuestion()" class="mt-6 bg-slate-800 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-slate-700 transition transform hover:scale-105 active:scale-95">
+                    Sıradaki Kelime ->
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-2 bg-slate-100">
+            <div id="timer-bar" class="h-full bg-blue-500 w-full transition-all duration-1000 ease-linear"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="p-6 grid grid-cols-3 gap-3 bg-slate-50">
+            <button onclick="checkAnswer('der')" class="card-anim btn-der h-24 rounded-xl bg-blue-100 border-b-4 border-blue-500 text-blue-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">MASCULINE</span>
+                <span class="group-hover:text-white">DER</span>
+            </button>
+            <button onclick="checkAnswer('die')" class="card-anim btn-die h-24 rounded-xl bg-red-100 border-b-4 border-red-500 text-red-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">FEMININE</span>
+                <span class="group-hover:text-white">DIE</span>
+            </button>
+            <button onclick="checkAnswer('das')" class="card-anim btn-das h-24 rounded-xl bg-green-100 border-b-4 border-green-500 text-green-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">NEUTRAL</span>
+                <span class="group-hover:text-white">DAS</span>
+            </button>
+        </div>
+        
+        <div class="p-2 text-center text-xs text-slate-400 bg-slate-50 border-t border-slate-200">
+            Okul Eşyaları - Almanca Pratik
+        </div>
+    </div>
+
+    <script>
+        // Database of words (STATIONERY ONLY)
+        // art: 'der' | 'die' | 'das'
+        const wordDatabase = [
+            // DER (Masculine)
+            { word: 'Bleistift', art: 'der', tr: 'Kurşun Kalem', icon: '✏️' },
+            { word: 'Kugelschreiber', art: 'der', tr: 'Tükenmez Kalem', icon: '🖊️' },
+            { word: 'Radiergummi', art: 'der', tr: 'Silgi', icon: '🧼' },
+            { word: 'Spitzer', art: 'der', tr: 'Kalemtraş', icon: '⚙️' },
+            { word: 'Rucksack', art: 'der', tr: 'Sırt Çantası', icon: '🎒' },
+            { word: 'Marker', art: 'der', tr: 'Keçeli Kalem', icon: '🖍️' },
+            { word: 'Ordner', art: 'der', tr: 'Klasör', icon: '📁' },
+            { word: 'Klebstoff', art: 'der', tr: 'Yapıştırıcı', icon: '🧴' },
+            { word: 'Rechner', art: 'der', tr: 'Hesap Makinesi', icon: '🧮' },
+            { word: 'Pinsel', art: 'der', tr: 'Fırça', icon: '🖌️' },
+
+            // DIE (Feminine)
+            { word: 'Schere', art: 'die', tr: 'Makas', icon: '✂️' },
+            { word: 'Tasche', art: 'die', tr: 'Çanta', icon: '👜' },
+            { word: 'Schultasche', art: 'die', tr: 'Okul Çantası', icon: '🎒' },
+            { word: 'Tafel', art: 'die', tr: 'Yazı Tahtası', icon: '🏫' },
+            { word: 'Landkarte', art: 'die', tr: 'Harita', icon: '🗺️' },
+            { word: 'Mappe', art: 'die', tr: 'Dosya', icon: '📂' },
+            { word: 'Kreide', art: 'die', tr: 'Tebeşir', icon: '⚪' },
+            { word: 'Schule', art: 'die', tr: 'Okul', icon: '🏫' },
+            { word: 'Bibliothek', art: 'die', tr: 'Kütüphane', icon: '📚' },
+            { word: 'Pause', art: 'die', tr: 'Teneffüs', icon: '🔔' },
+
+            // DAS (Neutral)
+            { word: 'Buch', art: 'das', tr: 'Kitap', icon: '📖' },
+            { word: 'Heft', art: 'das', tr: 'Defter', icon: '📓' },
+            { word: 'Papier', art: 'das', tr: 'Kağıt', icon: '📄' },
+            { word: 'Lineal', art: 'das', tr: 'Cetvel', icon: '📏' },
+            { word: 'Mäppchen', art: 'das', tr: 'Kalemlik', icon: '👝' },
+            { word: 'Bild', art: 'das', tr: 'Resim', icon: '🖼️' },
+            { word: 'Wörterbuch', art: 'das', tr: 'Sözlük', icon: '📕' },
+            { word: 'Zeugnis', art: 'das', tr: 'Karne', icon: '📜' },
+            { word: 'Gymnasium', art: 'das', tr: 'Lise', icon: '🏛️' },
+            { word: 'Klassenzimmer', art: 'das', tr: 'Sınıf', icon: '🚪' }
+        ];
+
+        let currentWordObj = null;
+        let score = 0;
+        let streak = 0;
+        let gameActive = true;
+
+        // Elements
+        const elWord = document.getElementById('word-display');
+        const elTranslation = document.getElementById('translation-display');
+        const elIcon = document.getElementById('icon-display');
+        const elScore = document.getElementById('score');
+        const elStreak = document.getElementById('streak');
+        const elOverlay = document.getElementById('result-overlay');
+        const elResultTitle = document.getElementById('result-title');
+        const elResultMessage = document.getElementById('result-message');
+        const elResultIcon = document.getElementById('result-icon');
+        const elCardArea = document.getElementById('card-area');
+
+        // Sounds (Simple Audio Context could be added, but keeping it silent/visual for single-file reliability)
+
+        function getRandomWord() {
+            // Simple randomizer. In a more complex app, we'd avoid repeats until deck is clear.
+            return wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
+        }
+
+        function initGame() {
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            elOverlay.classList.add('hidden');
+            gameActive = true;
+            
+            // Avoid picking the exact same word twice in a row
+            let newWord;
+            do {
+                newWord = getRandomWord();
+            } while (currentWordObj && newWord.word === currentWordObj.word);
+            
+            currentWordObj = newWord;
+            
+            // Update UI
+            elWord.innerText = currentWordObj.word;
+            elTranslation.innerText = currentWordObj.tr;
+            elIcon.innerText = currentWordObj.icon;
+            
+            // Reset animations
+            elCardArea.classList.remove('shake');
+            elIcon.classList.remove('correct-pop');
+        }
+
+        function checkAnswer(selectedArticle) {
+            if (!gameActive) return;
+            gameActive = false;
+
+            const isCorrect = selectedArticle === currentWordObj.art;
+            const correctArticle = currentWordObj.art.charAt(0).toUpperCase() + currentWordObj.art.slice(1); // Capitalize
+
+            if (isCorrect) {
+                // Logic for Correct
+                score += 10 + (streak * 2); // Bonus for streaks
+                streak++;
+                
+                // Visuals
+                elResultIcon.innerText = "🎉";
+                elResultTitle.innerText = "Harika!";
+                elResultTitle.className = "text-3xl font-black mb-1 text-green-600";
+                elResultMessage.innerHTML = `Doğru cevap: <span class="font-bold text-green-600">${correctArticle}</span> ${currentWordObj.word}`;
+                
+                // Animation
+                elIcon.classList.add('correct-pop');
+                
+                // Auto advance if correct (optional style, but we'll use the overlay for reinforcement)
+                updateStats();
+                setTimeout(() => {
+                    showOverlay();
+                }, 400);
+
+            } else {
+                // Logic for Wrong
+                streak = 0;
+                
+                // Visuals
+                elResultIcon.innerText = "😔";
+                elResultTitle.innerText = "Yanlış...";
+                elResultTitle.className = "text-3xl font-black mb-1 text-red-600";
+                
+                // Color code the correction
+                let colorClass = "text-slate-800";
+                if(currentWordObj.art === 'der') colorClass = "text-blue-600";
+                if(currentWordObj.art === 'die') colorClass = "text-red-600";
+                if(currentWordObj.art === 'das') colorClass = "text-green-600";
+
+                elResultMessage.innerHTML = `Doğrusu: <span class="font-bold ${colorClass}">${correctArticle}</span> ${currentWordObj.word}`;
+                
+                // Shake animation
+                elCardArea.classList.add('shake');
+                
+                updateStats();
+                setTimeout(() => {
+                    showOverlay();
+                }, 500);
+            }
+        }
+
+        function updateStats() {
+            elScore.innerText = score;
+            elStreak.innerText = streak + " 🔥";
+        }
+
+        function showOverlay() {
+            elOverlay.classList.remove('hidden');
+        }
+
+        // Start the game
+        initGame();
+
+    </script>
+</body>
+</html>
