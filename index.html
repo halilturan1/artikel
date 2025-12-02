@@ -45,22 +45,56 @@
         .btn-der:hover { background-color: #2563eb; border-color: #1e40af; }
         .btn-die:hover { background-color: #dc2626; border-color: #991b1b; }
         .btn-das:hover { background-color: #16a34a; border-color: #166534; }
+        
+        .hidden-screen {
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-white p-4">
 
-    <!-- Game Container -->
-    <div class="w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
+    <!-- START SCREEN -->
+    <div id="start-screen" class="w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl p-8 text-center">
+        <div class="text-6xl mb-4">🇩🇪</div>
+        <h1 class="text-3xl font-black mb-2 text-slate-800">Artikel Ustası</h1>
+        <p class="text-slate-500 mb-8">Kırtasiye & Okul Eşyaları</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-left text-sm font-bold text-slate-400 mb-1 ml-1">OYUNCU ADI</label>
+                <input type="text" id="username-input" placeholder="Adını yaz..." class="w-full bg-slate-100 border-2 border-slate-200 rounded-xl p-4 font-bold text-lg focus:outline-none focus:border-blue-500 transition-colors" maxlength="12">
+            </div>
+            
+            <button onclick="startGame()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500 transform hover:scale-105 transition-all">
+                BAŞLA
+            </button>
+        </div>
+
+        <!-- Mini Leaderboard Preview -->
+        <div class="mt-8 pt-6 border-t border-slate-100">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Son Şampiyonlar</h3>
+            <div id="mini-leaderboard" class="space-y-2 text-sm">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME CONTAINER -->
+    <div id="game-screen" class="hidden-screen w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
         
         <!-- Header / Stats -->
         <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center w-1/3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Oyuncu</span>
+                <span id="display-username" class="text-sm font-black text-blue-600 truncate w-full text-center">...</span>
+            </div>
+            <div class="flex flex-col items-center w-1/3 border-x border-slate-200">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Skor</span>
                 <span id="score" class="text-2xl font-black text-slate-700">0</span>
             </div>
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center w-1/3">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Seri</span>
-                <span id="streak" class="text-2xl font-black text-orange-500">0 🔥</span>
+                <span id="streak" class="text-2xl font-black text-orange-500">0</span>
             </div>
         </div>
 
@@ -70,13 +104,13 @@
             <h1 id="word-display" class="text-4xl font-black mb-2 text-slate-800 text-center tracking-tight">Bleistift</h1>
             <p id="translation-display" class="text-slate-500 font-medium text-lg bg-slate-100 px-3 py-1 rounded-full">Kurşun Kalem</p>
             
-            <!-- Result Overlay (Hidden by default) -->
-            <div id="result-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center hidden z-10 rounded-xl">
+            <!-- Result Overlay -->
+            <div id="result-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center hidden z-10 rounded-xl">
                 <div id="result-icon" class="text-6xl mb-2">✅</div>
                 <h2 id="result-title" class="text-2xl font-bold mb-1">Doğru!</h2>
                 <p id="result-message" class="text-slate-600">Cevap: <span class="font-bold">Der</span> Bleistift</p>
                 <button onclick="nextQuestion()" class="mt-6 bg-slate-800 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-slate-700 transition transform hover:scale-105 active:scale-95">
-                    Sıradaki Kelime ->
+                    Devam Et ->
                 </button>
             </div>
         </div>
@@ -89,27 +123,49 @@
         <!-- Controls -->
         <div class="p-6 grid grid-cols-3 gap-3 bg-slate-50">
             <button onclick="checkAnswer('der')" class="card-anim btn-der h-24 rounded-xl bg-blue-100 border-b-4 border-blue-500 text-blue-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">MASCULINE</span>
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">ERKEK</span>
                 <span class="group-hover:text-white">DER</span>
             </button>
             <button onclick="checkAnswer('die')" class="card-anim btn-die h-24 rounded-xl bg-red-100 border-b-4 border-red-500 text-red-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">FEMININE</span>
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">DİŞİ</span>
                 <span class="group-hover:text-white">DIE</span>
             </button>
             <button onclick="checkAnswer('das')" class="card-anim btn-das h-24 rounded-xl bg-green-100 border-b-4 border-green-500 text-green-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">NEUTRAL</span>
+                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">NÖTR</span>
                 <span class="group-hover:text-white">DAS</span>
             </button>
         </div>
         
-        <div class="p-2 text-center text-xs text-slate-400 bg-slate-50 border-t border-slate-200">
-            Okul Eşyaları - Almanca Pratik
+        <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-center">
+            <button onclick="endGame()" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-widest border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors">
+                Oyunu Bitir ve Kaydet
+            </button>
         </div>
     </div>
 
+    <!-- LEADERBOARD SCREEN -->
+    <div id="leaderboard-screen" class="hidden-screen w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl p-8 text-center relative">
+        <div class="text-6xl mb-4">🏆</div>
+        <h2 class="text-2xl font-black text-slate-800 mb-1">Oyun Bitti!</h2>
+        <p class="text-slate-500 mb-6">Tebrikler <span id="final-username" class="font-bold text-slate-800"></span></p>
+
+        <div class="bg-blue-50 rounded-xl p-4 mb-6">
+            <span class="text-sm text-blue-400 font-bold uppercase block mb-1">TOPLAM SKOR</span>
+            <span id="final-score" class="text-5xl font-black text-blue-600">0</span>
+        </div>
+
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-left">Liderlik Tablosu</h3>
+        <div id="full-leaderboard" class="space-y-2 mb-8 max-h-48 overflow-y-auto">
+            <!-- Populated by JS -->
+        </div>
+
+        <button onclick="resetGame()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black text-xl shadow-lg hover:bg-slate-700 transform hover:scale-105 transition-all">
+            TEKRAR OYNA
+        </button>
+    </div>
+
     <script>
-        // Database of words (STATIONERY ONLY)
-        // art: 'der' | 'die' | 'das'
+        // Database
         const wordDatabase = [
             // DER (Masculine)
             { word: 'Bleistift', art: 'der', tr: 'Kurşun Kalem', icon: '✏️' },
@@ -122,7 +178,6 @@
             { word: 'Klebstoff', art: 'der', tr: 'Yapıştırıcı', icon: '🧴' },
             { word: 'Rechner', art: 'der', tr: 'Hesap Makinesi', icon: '🧮' },
             { word: 'Pinsel', art: 'der', tr: 'Fırça', icon: '🖌️' },
-
             // DIE (Feminine)
             { word: 'Schere', art: 'die', tr: 'Makas', icon: '✂️' },
             { word: 'Tasche', art: 'die', tr: 'Çanta', icon: '👜' },
@@ -134,7 +189,6 @@
             { word: 'Schule', art: 'die', tr: 'Okul', icon: '🏫' },
             { word: 'Bibliothek', art: 'die', tr: 'Kütüphane', icon: '📚' },
             { word: 'Pause', art: 'die', tr: 'Teneffüs', icon: '🔔' },
-
             // DAS (Neutral)
             { word: 'Buch', art: 'das', tr: 'Kitap', icon: '📖' },
             { word: 'Heft', art: 'das', tr: 'Defter', icon: '📓' },
@@ -148,12 +202,22 @@
             { word: 'Klassenzimmer', art: 'das', tr: 'Sınıf', icon: '🚪' }
         ];
 
+        // State Variables
+        let currentDeck = []; // To prevent repeats
         let currentWordObj = null;
         let score = 0;
         let streak = 0;
-        let gameActive = true;
+        let gameActive = false;
+        let userName = "";
 
         // Elements
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            leaderboard: document.getElementById('leaderboard-screen')
+        };
+        const elUsernameInput = document.getElementById('username-input');
+        const elDisplayUsername = document.getElementById('display-username');
         const elWord = document.getElementById('word-display');
         const elTranslation = document.getElementById('translation-display');
         const elIcon = document.getElementById('icon-display');
@@ -165,28 +229,56 @@
         const elResultIcon = document.getElementById('result-icon');
         const elCardArea = document.getElementById('card-area');
 
-        // Sounds (Simple Audio Context could be added, but keeping it silent/visual for single-file reliability)
+        // --- GAME LOGIC ---
 
-        function getRandomWord() {
-            // Simple randomizer. In a more complex app, we'd avoid repeats until deck is clear.
-            return wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
+        function startGame() {
+            const name = elUsernameInput.value.trim();
+            if (!name) {
+                alert("Lütfen bir isim gir!");
+                return;
+            }
+            userName = name;
+            elDisplayUsername.innerText = userName;
+
+            // Reset game state
+            score = 0;
+            streak = 0;
+            updateStats();
+            
+            // Initialize fresh deck
+            resetDeck();
+
+            // Switch screens
+            switchScreen('game');
+            nextQuestion();
         }
 
-        function initGame() {
-            nextQuestion();
+        function resetDeck() {
+            // Create a shallow copy of the full database
+            currentDeck = [...wordDatabase];
+        }
+
+        function getNextWordFromDeck() {
+            // If deck is empty, refill it (Endless mode)
+            if (currentDeck.length === 0) {
+                resetDeck();
+            }
+
+            // Pick a random index from the current deck
+            const randomIndex = Math.floor(Math.random() * currentDeck.length);
+            
+            // Remove that word from the deck and return it
+            // splice returns an array, so we take [0]
+            const selectedWord = currentDeck.splice(randomIndex, 1)[0];
+            
+            return selectedWord;
         }
 
         function nextQuestion() {
             elOverlay.classList.add('hidden');
             gameActive = true;
             
-            // Avoid picking the exact same word twice in a row
-            let newWord;
-            do {
-                newWord = getRandomWord();
-            } while (currentWordObj && newWord.word === currentWordObj.word);
-            
-            currentWordObj = newWord;
+            currentWordObj = getNextWordFromDeck();
             
             // Update UI
             elWord.innerText = currentWordObj.word;
@@ -203,52 +295,37 @@
             gameActive = false;
 
             const isCorrect = selectedArticle === currentWordObj.art;
-            const correctArticle = currentWordObj.art.charAt(0).toUpperCase() + currentWordObj.art.slice(1); // Capitalize
+            const correctArticle = currentWordObj.art.charAt(0).toUpperCase() + currentWordObj.art.slice(1);
 
             if (isCorrect) {
-                // Logic for Correct
-                score += 10 + (streak * 2); // Bonus for streaks
+                score += 10 + (streak * 2);
                 streak++;
                 
-                // Visuals
                 elResultIcon.innerText = "🎉";
                 elResultTitle.innerText = "Harika!";
                 elResultTitle.className = "text-3xl font-black mb-1 text-green-600";
                 elResultMessage.innerHTML = `Doğru cevap: <span class="font-bold text-green-600">${correctArticle}</span> ${currentWordObj.word}`;
-                
-                // Animation
                 elIcon.classList.add('correct-pop');
                 
-                // Auto advance if correct (optional style, but we'll use the overlay for reinforcement)
                 updateStats();
-                setTimeout(() => {
-                    showOverlay();
-                }, 400);
-
+                setTimeout(() => showOverlay(), 400);
             } else {
-                // Logic for Wrong
                 streak = 0;
                 
-                // Visuals
                 elResultIcon.innerText = "😔";
                 elResultTitle.innerText = "Yanlış...";
                 elResultTitle.className = "text-3xl font-black mb-1 text-red-600";
                 
-                // Color code the correction
                 let colorClass = "text-slate-800";
                 if(currentWordObj.art === 'der') colorClass = "text-blue-600";
                 if(currentWordObj.art === 'die') colorClass = "text-red-600";
                 if(currentWordObj.art === 'das') colorClass = "text-green-600";
 
                 elResultMessage.innerHTML = `Doğrusu: <span class="font-bold ${colorClass}">${correctArticle}</span> ${currentWordObj.word}`;
-                
-                // Shake animation
                 elCardArea.classList.add('shake');
                 
                 updateStats();
-                setTimeout(() => {
-                    showOverlay();
-                }, 500);
+                setTimeout(() => showOverlay(), 500);
             }
         }
 
@@ -261,8 +338,72 @@
             elOverlay.classList.remove('hidden');
         }
 
-        // Start the game
-        initGame();
+        // --- LEADERBOARD & END GAME ---
+
+        function endGame() {
+            saveScore(userName, score);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-username').innerText = userName;
+            renderLeaderboard('full-leaderboard');
+            switchScreen('leaderboard');
+        }
+
+        function resetGame() {
+            elUsernameInput.value = ""; // Clear name or keep it? Let's clear for new player
+            renderLeaderboard('mini-leaderboard');
+            switchScreen('start');
+        }
+
+        function saveScore(name, score) {
+            if(score === 0) return; // Don't save 0 scores
+
+            let scores = JSON.parse(localStorage.getItem('artikelGameScores')) || [];
+            scores.push({ name: name, score: score, date: new Date().toLocaleDateString() });
+            
+            // Sort desc
+            scores.sort((a, b) => b.score - a.score);
+            
+            // Keep top 10
+            scores = scores.slice(0, 10);
+            
+            localStorage.setItem('artikelGameScores', JSON.stringify(scores));
+        }
+
+        function renderLeaderboard(elementId) {
+            const container = document.getElementById(elementId);
+            const scores = JSON.parse(localStorage.getItem('artikelGameScores')) || [];
+            
+            container.innerHTML = "";
+            
+            if (scores.length === 0) {
+                container.innerHTML = "<div class='text-slate-400 italic text-center'>Henüz kayıtlı skor yok. İlk sen ol!</div>";
+                return;
+            }
+
+            scores.forEach((s, index) => {
+                const isTop = index === 0 ? "bg-yellow-100 border-yellow-200" : "bg-slate-50 border-slate-100";
+                const rankIcon = index === 0 ? "👑" : (index + 1) + ".";
+                
+                const html = `
+                    <div class="flex justify-between items-center p-3 rounded-lg border ${isTop}">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-slate-400 w-6 text-center">${rankIcon}</span>
+                            <span class="font-bold text-slate-700">${s.name}</span>
+                        </div>
+                        <span class="font-black text-blue-600">${s.score}</span>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(el => el.classList.add('hidden-screen'));
+            screens[screenName].classList.remove('hidden-screen');
+        }
+
+        // Init
+        renderLeaderboard('mini-leaderboard');
 
     </script>
 </body>
