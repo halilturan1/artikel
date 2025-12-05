@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Almanca Artikel Savaşı: 2 vs 2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,101 +11,115 @@
         body {
             font-family: 'Fredoka', sans-serif;
             background-color: #4ade80;
-            overflow: hidden;
-            touch-action: manipulation;
-            user-select: none;
+            overflow: hidden; /* Kaydırmayı engelle */
+            touch-action: none; /* Mobilde zoom/scroll engelle */
+            user-select: none; /* Metin seçimini engelle */
         }
 
-        /* Halat ve Zemin */
-        .rope-container {
+        /* --- OYUN ALANI STİLLERİ --- */
+
+        #game-scene {
             position: relative;
-            height: 16px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
             width: 100%;
-            margin-top: 60px; /* Karakterlerin el hizasına gelmesi için */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        /* Halatın kendisi */
+        .rope-container {
+            position: absolute;
+            height: 12px;
+            width: 100%;
+            z-index: 5;
+            pointer-events: none;
         }
 
         .rope {
             position: absolute;
             top: 50%;
-            left: 50%; /* JS ile güncellenecek */
+            left: 50%; /* JS ile güncellenir */
             transform: translate(-50%, -50%);
             height: 14px;
-            width: 120%; /* Ekrandan taşsın */
+            width: 250vw; /* Ekrandan taşacak kadar uzun */
             background: repeating-linear-gradient(45deg, #d4a373, #d4a373 10px, #a98467 10px, #a98467 20px);
             border-radius: 6px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 10;
+            transition: left 0.4s cubic-bezier(0.2, 0.6, 0.4, 1);
         }
 
+        /* Halatın ortasındaki düğüm */
         .knot {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            background-color: #ef4444;
+            width: 30px;
+            height: 30px;
+            background-color: #ef4444; /* Kırmızı başlar, ortaya göre değişebilir */
             border: 4px solid #fff;
             border-radius: 50%;
-            z-index: 20;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        /* Animasyonlu Karakterler (SVG) */
-        .stickman {
-            width: 80px;
-            height: 120px;
+        /* Takım Konteynerleri (Halatla beraber kayanlar) */
+        .team-container {
             position: absolute;
-            bottom: -20px; /* Halatın altına hizala */
+            top: 50%;
+            transform: translateY(-50%); /* Dikey ortalama */
+            display: flex;
+            transition: left 0.4s cubic-bezier(0.2, 0.6, 0.4, 1), right 0.4s cubic-bezier(0.2, 0.6, 0.4, 1);
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* Çöp Adam (SVG) */
+        .stickman {
+            width: 60px; /* Mobilde varsayılan */
+            height: 90px;
             overflow: visible;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.2));
         }
 
+        @media (min-width: 768px) {
+            .stickman {
+                width: 100px;
+                height: 140px;
+            }
+        }
+
+        /* Çekme Animasyonu */
         .stickman-body {
-            transform-origin: 50% 90%; /* Ayaklardan güç al */
-            animation: pull-action 1.5s infinite alternate ease-in-out;
+            transform-origin: 50% 100%; /* Ayaklardan bükül */
+            animation: pull-action 1s infinite alternate ease-in-out;
         }
 
-        .red-team-anim .stickman-body {
-            animation-delay: 0s;
-        }
-        .red-team-anim:nth-child(2) .stickman-body {
-            animation-delay: 0.3s;
-        }
+        .red-team-anim .stickman-body { animation-delay: 0s; }
+        .red-team-anim:nth-child(2) .stickman-body { animation-delay: 0.2s; }
 
-        .blue-team-anim .stickman-body {
-            animation: pull-action-blue 1.5s infinite alternate ease-in-out;
+        .blue-team-anim .stickman-body { 
+            animation: pull-action-blue 1s infinite alternate ease-in-out; 
         }
-        .blue-team-anim:nth-child(2) .stickman-body {
-            animation-delay: 0.3s;
-        }
+        .blue-team-anim:nth-child(2) .stickman-body { animation-delay: 0.2s; }
 
         @keyframes pull-action {
-            0% { transform: rotate(10deg); }
-            100% { transform: rotate(-20deg); } /* Geriye yaslanma */
+            0% { transform: rotate(5deg) skewX(5deg); }
+            100% { transform: rotate(-25deg) skewX(-10deg); } /* Geriye yaslan */
         }
 
         @keyframes pull-action-blue {
-            0% { transform: scaleX(-1) rotate(10deg); }
-            100% { transform: scaleX(-1) rotate(-20deg); }
+            /* Mavi takım aynalanmış olduğu için ters açı */
+            0% { transform: scaleX(-1) rotate(5deg) skewX(5deg); }
+            100% { transform: scaleX(-1) rotate(-25deg) skewX(-10deg); }
         }
 
-        /* Kart Animasyonları */
-        .pop-in {
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        /* Efektler */
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .shake {
-            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-2px, 0, 0); }
             20%, 80% { transform: translate3d(4px, 0, 0); }
@@ -120,205 +134,215 @@
             background-position: 0 0, 10px 10px;
             opacity: 0.4;
         }
+        
+        /* Butonlar */
+        .game-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col overflow-hidden bg-green-400">
 
-    <!-- Arka Plan -->
     <div class="absolute inset-0 grass-pattern pointer-events-none"></div>
 
-    <!-- Üst Bar -->
-    <header class="z-20 w-full p-2 flex justify-between items-center bg-white/40 backdrop-blur-md shadow-sm">
-        <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-full bg-red-500 animate-pulse"></div>
-            <span class="text-red-700 font-bold text-xl drop-shadow-sm">KIRMIZI</span>
+    <!-- ÜST BİLGİ PANELİ -->
+    <header class="z-20 w-full p-2 flex justify-between items-center bg-white/60 backdrop-blur-md shadow-sm h-14 md:h-16 shrink-0 border-b border-white/50">
+        <div class="flex items-center gap-2 pl-2">
+            <div class="w-3 h-3 md:w-4 md:h-4 rounded-full bg-red-500 animate-pulse"></div>
+            <span class="text-red-700 font-bold text-lg md:text-xl">KIRMIZI</span>
         </div>
-        <div class="text-white font-black text-2xl tracking-widest drop-shadow-lg bg-black/10 px-6 py-1 rounded-full">ARTIKEL SAVAŞI</div>
-        <div class="flex items-center gap-2">
-            <span class="text-blue-700 font-bold text-xl drop-shadow-sm">MAVİ</span>
-            <div class="w-4 h-4 rounded-full bg-blue-600 animate-pulse"></div>
+        <div class="text-white font-black text-lg md:text-2xl tracking-widest drop-shadow-lg bg-black/10 px-4 py-1 rounded-full whitespace-nowrap">HALAT SAVAŞI</div>
+        <div class="flex items-center gap-2 pr-2">
+            <span class="text-blue-700 font-bold text-lg md:text-xl">MAVİ</span>
+            <div class="w-3 h-3 md:w-4 md:h-4 rounded-full bg-blue-600 animate-pulse"></div>
         </div>
     </header>
 
-    <!-- Oyun Alanı (Split Screen Sorular) -->
-    <main class="flex-grow w-full flex flex-col relative z-10">
+    <!-- ANA OYUN ALANI -->
+    <main class="flex-grow w-full flex flex-col relative z-10 justify-start overflow-hidden">
         
-        <!-- Soru Kartları Alanı -->
-        <div class="flex justify-between w-full px-4 md:px-12 mt-4 md:mt-8 gap-4">
-            
-            <!-- Kırmızı Takım Sorusu -->
-            <div id="red-card" class="w-1/2 max-w-md bg-white rounded-3xl border-b-8 border-red-500 shadow-xl p-4 flex flex-col items-center transition-transform">
-                <span class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">KIRMIZI SORU</span>
-                <div id="red-word" class="text-3xl md:text-5xl font-black text-gray-800 text-center break-words">...</div>
+        <!-- SORU KARTLARI -->
+        <div class="flex justify-between w-full px-2 md:px-12 mt-2 md:mt-6 gap-2 shrink-0 relative z-30 h-28 md:h-40">
+            <!-- Kırmızı Soru -->
+            <div id="red-card" class="w-1/2 max-w-md bg-white rounded-xl md:rounded-3xl border-b-4 md:border-b-8 border-red-500 shadow-xl p-2 flex flex-col items-center justify-center">
+                <span class="text-[10px] md:text-xs font-bold text-red-400 uppercase tracking-widest mb-1">KIRMIZI</span>
+                <div id="red-word" class="text-2xl md:text-4xl lg:text-5xl font-black text-gray-800 text-center break-words leading-tight">...</div>
             </div>
 
-            <!-- VS İkonu (Dekoratif) -->
-            <div class="absolute left-1/2 top-16 -translate-x-1/2 hidden md:flex items-center justify-center w-12 h-12 bg-yellow-400 rounded-full font-black text-yellow-800 shadow-lg border-2 border-white">VS</div>
+            <!-- VS -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 md:w-12 md:h-12 bg-yellow-400 rounded-full font-black text-yellow-800 shadow-lg border-2 border-white text-xs md:text-base">VS</div>
 
-            <!-- Mavi Takım Sorusu -->
-            <div id="blue-card" class="w-1/2 max-w-md bg-white rounded-3xl border-b-8 border-blue-600 shadow-xl p-4 flex flex-col items-center transition-transform">
-                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">MAVİ SORU</span>
-                <div id="blue-word" class="text-3xl md:text-5xl font-black text-gray-800 text-center break-words">...</div>
+            <!-- Mavi Soru -->
+            <div id="blue-card" class="w-1/2 max-w-md bg-white rounded-xl md:rounded-3xl border-b-4 md:border-b-8 border-blue-600 shadow-xl p-2 flex flex-col items-center justify-center">
+                <span class="text-[10px] md:text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">MAVİ</span>
+                <div id="blue-word" class="text-2xl md:text-4xl lg:text-5xl font-black text-gray-800 text-center break-words leading-tight">...</div>
             </div>
         </div>
 
-        <!-- Halat ve Karakterler Sahnesi -->
-        <div class="flex-grow flex items-center justify-center relative w-full overflow-hidden">
+        <!-- SAHNE (Karakterler ve Halat) -->
+        <div id="game-scene" class="flex-grow relative">
             
-            <!-- Orta Çizgi -->
-            <div class="absolute h-full w-2 bg-white/40 left-1/2 -translate-x-1/2 border-l border-r border-white/20 dashed"></div>
+            <!-- Orta Çizgi (Zemin) -->
+            <div class="absolute top-0 bottom-0 w-1 md:w-2 bg-white/40 left-1/2 -translate-x-1/2 border-l border-r border-white/20 dashed z-0"></div>
 
-            <!-- Kırmızı Takım Karakterleri (Sol) -->
-            <div class="absolute left-[5%] md:left-[15%] top-1/2 -translate-y-1/2 z-10">
-                <!-- Oyuncu 1 -->
-                <svg class="stickman red-team-anim" style="right: 60px;" viewBox="0 0 100 150">
+            <!-- KIRMIZI TAKIM -->
+            <div id="red-team" class="team-container" style="left: 10%;">
+                <!-- Oyuncu 2 (Arkada) -->
+                <svg class="stickman red-team-anim -mr-8 md:-mr-12 opacity-80" viewBox="0 0 100 150">
                     <g class="stickman-body">
-                        <circle cx="50" cy="30" r="15" fill="none" stroke="#dc2626" stroke-width="6" /> <!-- Kafa -->
-                        <line x1="50" y1="45" x2="50" y2="100" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/> <!-- Gövde -->
-                        <path d="M50 60 L80 80" stroke="#dc2626" stroke-width="6" stroke-linecap="round" /> <!-- Kol -->
-                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#dc2626" stroke-width="6" stroke-linecap="round" /> <!-- Bacaklar -->
+                        <circle cx="50" cy="30" r="15" fill="#fecaca" stroke="#dc2626" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 85" stroke="#dc2626" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L25 140 M50 100 L75 140" stroke="#dc2626" stroke-width="6" stroke-linecap="round" />
                     </g>
                 </svg>
-                <!-- Oyuncu 2 -->
-                <svg class="stickman red-team-anim" style="right: 0;" viewBox="0 0 100 150">
+                <!-- Oyuncu 1 (Önde) -->
+                <svg class="stickman red-team-anim" viewBox="0 0 100 150">
                     <g class="stickman-body">
-                        <circle cx="50" cy="30" r="15" fill="none" stroke="#ef4444" stroke-width="6" />
+                        <circle cx="50" cy="30" r="15" fill="#fff" stroke="#ef4444" stroke-width="6" />
                         <line x1="50" y1="45" x2="50" y2="100" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
-                        <path d="M50 60 L80 80" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
-                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 60 L80 85" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L25 140 M50 100 L75 140" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
                     </g>
                 </svg>
             </div>
 
-            <!-- Mavi Takım Karakterleri (Sağ) -->
-            <div class="absolute right-[5%] md:right-[15%] top-1/2 -translate-y-1/2 z-10">
-                <!-- Oyuncu 1 -->
-                <svg class="stickman blue-team-anim" style="left: 0;" viewBox="0 0 100 150">
-                    <g class="stickman-body">
-                        <circle cx="50" cy="30" r="15" fill="none" stroke="#2563eb" stroke-width="6" />
-                        <line x1="50" y1="45" x2="50" y2="100" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
-                        <path d="M50 60 L80 80" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
-                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
-                    </g>
-                </svg>
-                <!-- Oyuncu 2 -->
-                <svg class="stickman blue-team-anim" style="left: 60px;" viewBox="0 0 100 150">
-                    <g class="stickman-body">
-                        <circle cx="50" cy="30" r="15" fill="none" stroke="#3b82f6" stroke-width="6" />
-                        <line x1="50" y1="45" x2="50" y2="100" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
-                        <path d="M50 60 L80 80" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
-                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
-                    </g>
-                </svg>
-            </div>
-
-            <!-- Halat -->
-            <div class="rope-container w-full mx-0 relative">
+            <!-- HALAT (Oyuncuların el hizasına göre ayarlı) -->
+            <div class="rope-container" style="top: 52%;"> 
                 <div id="rope-visual" class="rope">
-                    <div class="knot flex items-center justify-center">
-                        <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+                    <div id="knot-visual" class="knot flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- MAVİ TAKIM -->
+            <div id="blue-team" class="team-container" style="right: 10%;">
+                <!-- Oyuncu 1 (Önde) -->
+                <svg class="stickman blue-team-anim z-10" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="#fff" stroke="#2563eb" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 85" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L25 140 M50 100 L75 140" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
+                    </g>
+                </svg>
+                <!-- Oyuncu 2 (Arkada) -->
+                <svg class="stickman blue-team-anim -ml-8 md:-ml-12 opacity-80" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="#bfdbfe" stroke="#3b82f6" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 85" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L25 140 M50 100 L75 140" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
+                    </g>
+                </svg>
             </div>
 
         </div>
     </main>
 
-    <!-- Kontrol Paneli -->
-    <footer class="w-full h-1/3 z-20 flex shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
+    <!-- KONTROL PANELİ (FOOTER) -->
+    <footer class="w-full z-20 flex shadow-[0_-10px_20px_rgba(0,0,0,0.1)] shrink-0 h-1/3 max-h-52 bg-white">
         
         <!-- Kırmızı Kontroller -->
         <div class="w-1/2 bg-red-50 p-2 md:p-4 flex flex-col justify-center items-center relative border-t-4 border-red-200">
             <div class="hidden md:block absolute top-2 left-4 text-red-900/40 font-bold text-sm">KLAVYE: A - S - D</div>
-            <div class="grid grid-cols-3 gap-2 w-full max-w-sm h-full max-h-32 md:max-h-40">
-                <button onclick="handleAnswer('red', 'der')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DER<span class="text-[10px] opacity-70 font-normal">Erkek</span></button>
-                <button onclick="handleAnswer('red', 'die')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DIE<span class="text-[10px] opacity-70 font-normal">Dişi</span></button>
-                <button onclick="handleAnswer('red', 'das')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DAS<span class="text-[10px] opacity-70 font-normal">Nötr</span></button>
+            <div class="grid grid-cols-3 gap-1 md:gap-3 w-full max-w-md h-full">
+                <button onclick="handleAnswer('red', 'der')" class="game-btn active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-red-600">DER</button>
+                <button onclick="handleAnswer('red', 'die')" class="game-btn active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-red-600">DIE</button>
+                <button onclick="handleAnswer('red', 'das')" class="game-btn active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-red-600">DAS</button>
             </div>
         </div>
 
         <!-- Mavi Kontroller -->
         <div class="w-1/2 bg-blue-50 p-2 md:p-4 flex flex-col justify-center items-center relative border-t-4 border-blue-200">
             <div class="hidden md:block absolute top-2 right-4 text-blue-900/40 font-bold text-sm">KLAVYE: J - K - L</div>
-            <div class="grid grid-cols-3 gap-2 w-full max-w-sm h-full max-h-32 md:max-h-40">
-                <button onclick="handleAnswer('blue', 'der')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DER<span class="text-[10px] opacity-70 font-normal">Erkek</span></button>
-                <button onclick="handleAnswer('blue', 'die')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DIE<span class="text-[10px] opacity-70 font-normal">Dişi</span></button>
-                <button onclick="handleAnswer('blue', 'das')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DAS<span class="text-[10px] opacity-70 font-normal">Nötr</span></button>
+            <div class="grid grid-cols-3 gap-1 md:gap-3 w-full max-w-md h-full">
+                <button onclick="handleAnswer('blue', 'der')" class="game-btn active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-blue-700">DER</button>
+                <button onclick="handleAnswer('blue', 'die')" class="game-btn active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-blue-700">DIE</button>
+                <button onclick="handleAnswer('blue', 'das')" class="game-btn active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-lg md:rounded-xl text-white text-lg md:text-3xl font-black flex flex-col items-center justify-center shadow-md transition-all hover:bg-blue-700">DAS</button>
             </div>
         </div>
 
     </footer>
 
-    <!-- Oyun Sonu Modal -->
+    <!-- MODAL: OYUN SONU -->
     <div id="game-over-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 text-center max-w-lg w-full border-8 border-yellow-400 shadow-2xl transform scale-110">
-            <div id="winner-icon" class="text-7xl mb-4 animate-bounce">🏆</div>
-            <h2 id="winner-text" class="text-5xl font-black mb-2 text-gray-800 uppercase italic">KAZANAN</h2>
-            <p class="text-gray-500 font-bold mb-8">Oyun Bitti!</p>
+        <div class="bg-white rounded-3xl p-6 md:p-8 text-center max-w-lg w-full border-8 border-yellow-400 shadow-2xl transform scale-110">
+            <div id="winner-icon" class="text-6xl md:text-7xl mb-4 animate-bounce">🏆</div>
+            <h2 id="winner-text" class="text-4xl md:text-5xl font-black mb-2 text-gray-800 uppercase italic">KAZANAN</h2>
+            <p class="text-gray-500 font-bold mb-6">Müthiş bir maçtı!</p>
             <button onclick="startGame()" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-2xl rounded-2xl shadow-[0_6px_0_#15803d] active:translate-y-1 active:shadow-none transition-all">
                 TEKRAR OYNA ↺
             </button>
         </div>
     </div>
 
-    <!-- Başlangıç Modal -->
+    <!-- MODAL: BAŞLANGIÇ -->
     <div id="start-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 text-center max-w-lg w-full border-b-8 border-blue-500 relative overflow-hidden">
+        <div class="bg-white rounded-3xl p-6 md:p-10 text-center max-w-lg w-full border-b-8 border-blue-500 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-red-500 to-blue-500"></div>
-            <h1 class="text-6xl font-black mb-1 text-gray-800 tracking-tighter">ARTIKEL</h1>
-            <h1 class="text-6xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-600 tracking-tighter">SAVAŞI</h1>
+            <h1 class="text-5xl md:text-6xl font-black mb-1 text-gray-800 tracking-tighter">ARTIKEL</h1>
+            <h1 class="text-5xl md:text-6xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-600 tracking-tighter">SAVAŞI</h1>
             
-            <div class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-200 text-left space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="bg-red-100 text-red-600 font-bold px-2 py-1 rounded text-xs">SOL TAKIM</span>
-                    <p class="text-sm text-gray-600">Kendi sorusunu çözer. <br><span class="font-bold">Tuşlar:</span> A, S, D</p>
+            <div class="bg-gray-100 p-4 rounded-xl mb-6 space-y-2 text-left text-sm md:text-base">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="font-bold text-gray-700">Kırmızı Takım (Sol):</span>
+                    <span class="text-gray-500">A, S, D tuşları</span>
                 </div>
-                <div class="w-full h-px bg-gray-200"></div>
-                <div class="flex items-center gap-3">
-                    <span class="bg-blue-100 text-blue-600 font-bold px-2 py-1 rounded text-xs">SAĞ TAKIM</span>
-                    <p class="text-sm text-gray-600">Kendi sorusunu çözer. <br><span class="font-bold">Tuşlar:</span> J, K, L</p>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    <span class="font-bold text-gray-700">Mavi Takım (Sağ):</span>
+                    <span class="text-gray-500">J, K, L tuşları</span>
+                </div>
+                <div class="text-xs text-gray-400 mt-2 italic text-center w-full">
+                    *Hızlı ve doğru cevap veren halatı çeker!
                 </div>
             </div>
 
-            <button onclick="startGame()" class="w-full py-5 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white font-black text-3xl rounded-2xl shadow-[0_6px_0_#c2410c] active:translate-y-1 active:shadow-none transition-all transform hover:scale-[1.02]">
+            <button onclick="startGame()" class="w-full py-4 md:py-5 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white font-black text-2xl md:text-3xl rounded-2xl shadow-[0_6px_0_#c2410c] active:translate-y-1 active:shadow-none transition-all transform hover:scale-[1.02]">
                 BAŞLA!
             </button>
         </div>
     </div>
 
     <script>
-        // Veritabanı
+        // --- VERİTABANI ---
         const words = [
             { word: "Apfel", article: "der" }, { word: "Baum", article: "der" }, { word: "Hund", article: "der" },
             { word: "Tisch", article: "der" }, { word: "Stuhl", article: "der" }, { word: "Vater", article: "der" },
-            { word: "Mond", article: "der" }, { word: "Löffel", article: "der" }, { word: "Computer", article: "der" },
-            { word: "Wagen", article: "der" }, { word: "Ball", article: "der" }, { word: "Schlüssel", article: "der" },
+            { word: "Computer", article: "der" }, { word: "Wagen", article: "der" }, { word: "Schlüssel", article: "der" },
             
             { word: "Katze", article: "die" }, { word: "Sonne", article: "die" }, { word: "Blume", article: "die" },
             { word: "Frau", article: "die" }, { word: "Mutter", article: "die" }, { word: "Lampe", article: "die" },
-            { word: "Banane", article: "die" }, { word: "Schule", article: "die" }, { word: "Tasche", article: "die" },
-            { word: "Brille", article: "die" }, { word: "Uhr", article: "die" }, { word: "Tür", article: "die" },
+            { word: "Tasche", article: "die" }, { word: "Brille", article: "die" }, { word: "Tür", article: "die" },
             
             { word: "Haus", article: "das" }, { word: "Buch", article: "das" }, { word: "Auto", article: "das" },
             { word: "Kind", article: "das" }, { word: "Wasser", article: "das" }, { word: "Brot", article: "das" },
-            { word: "Fenster", article: "das" }, { word: "Bett", article: "das" }, { word: "Spiel", article: "das" },
-            { word: "Handy", article: "das" }, { word: "Bild", article: "das" }, { word: "Geld", article: "das" }
+            { word: "Fenster", article: "das" }, { word: "Handy", article: "das" }, { word: "Geld", article: "das" }
         ];
 
+        // --- OYUN DURUMU ---
         let gameState = {
             isPlaying: false,
-            ropePosition: 50, // 50 = merkez
+            ropePosition: 50, // 0 = Kırmızı Kazanır, 100 = Mavi Kazanır
             redWord: null,
             blueWord: null,
         };
 
+        // --- DOM ELEMENTLERİ ---
         const ropeVisual = document.getElementById('rope-visual');
+        const knotVisual = document.getElementById('knot-visual');
+        const redTeam = document.getElementById('red-team');
+        const blueTeam = document.getElementById('blue-team');
         const redCard = document.getElementById('red-card');
         const blueCard = document.getElementById('blue-card');
         const redWordDisplay = document.getElementById('red-word');
         const blueWordDisplay = document.getElementById('blue-word');
 
-        // Ses Efektleri
+        // --- SES SİSTEMİ (Web Audio API) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSound(type) {
@@ -331,33 +355,37 @@
             const now = audioCtx.currentTime;
 
             if (type === 'correct') {
+                // Pozitif "Ding" Sesi
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
-                gain.gain.setValueAtTime(0.2, now);
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.2);
                 osc.start(now);
                 osc.stop(now + 0.2);
             } else if (type === 'wrong') {
+                // Negatif "Bzzzt" Sesi
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, now);
                 osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.setValueAtTime(0.1, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.3);
                 osc.start(now);
                 osc.stop(now + 0.3);
             } else if (type === 'win') {
+                // Zafer Melodisi
                 osc.type = 'square';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.setValueAtTime(659.25, now + 0.1);
-                osc.frequency.setValueAtTime(783.99, now + 0.2);
-                osc.frequency.setValueAtTime(1046.50, now + 0.4);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
                 osc.start(now);
-                osc.stop(now + 1);
+                osc.stop(now + 0.6);
             }
         }
+
+        // --- OYUN MANTIĞI ---
 
         function startGame() {
             document.getElementById('start-modal').classList.add('hidden');
@@ -366,7 +394,7 @@
             gameState.isPlaying = true;
             gameState.ropePosition = 50;
             
-            updateRopeVisual();
+            updateVisuals();
             newWordFor('red');
             newWordFor('blue');
         }
@@ -397,24 +425,20 @@
 
             if (isCorrect) {
                 playSound('correct');
-                
-                // Halatı hareket ettir
+                // Doğru cevap: Halatı kendine çek (%6 güç)
                 if (team === 'red') {
-                    gameState.ropePosition -= 7; // Kırmızıya çek
+                    gameState.ropePosition -= 6; 
                 } else {
-                    gameState.ropePosition += 7; // Maviye çek
+                    gameState.ropePosition += 6; 
                 }
-
-                // Bildiği için yeni kelime ver
                 newWordFor(team);
             } else {
                 playSound('wrong');
-                
-                // Yanlış cevap cezası (Hafifçe karşıya iter)
+                // Yanlış cevap: Halat karşıya kayar (%3 ceza)
                 if (team === 'red') {
                     gameState.ropePosition += 3;
                     redCard.classList.remove('shake');
-                    void redCard.offsetWidth;
+                    void redCard.offsetWidth; // Reflow
                     redCard.classList.add('shake');
                 } else {
                     gameState.ropePosition -= 3;
@@ -424,14 +448,37 @@
                 }
             }
 
-            updateRopeVisual();
+            updateVisuals();
             checkWin();
         }
 
-        function updateRopeVisual() {
-            // Sınırları kontrol et (görsel olarak halatın ekrandan kopmaması için)
-            let visualPos = Math.max(0, Math.min(100, gameState.ropePosition));
-            ropeVisual.style.left = visualPos + '%';
+        function updateVisuals() {
+            // Sınırları kontrol et
+            let pos = Math.max(0, Math.min(100, gameState.ropePosition));
+            
+            // 1. Halatı güncelle (CSS left özelliği)
+            ropeVisual.style.left = pos + '%';
+
+            // 2. Takımları halatla birlikte hareket ettir
+            // Mantık: Halat 50'den sapınca takımlar da o kadar sapmalı.
+            // 50 = Merkez. 
+            // Eğer pos = 40 ise (Kırmızı çekiyor), ofset = 10.
+            // Kırmızı takım daha geriye (sola), Mavi takım ileriye (sola) gider.
+            
+            const offset = 50 - pos; // Pozitif: Kırmızı kazanıyor, Negatif: Mavi kazanıyor
+            
+            // Hareket katsayısı (0.6 ile çarparak ekran dışına çok hızlı çıkmalarını engelliyoruz)
+            const shift = offset * 0.6; 
+
+            // Başlangıç noktaları: Kırmızı %10 solda, Mavi %10 sağda.
+            // Sola kayma (Kırmızı kazanıyor) -> shift pozitif -> red left azalır, blue right artar(sola kayar).
+            redTeam.style.left = `calc(10% - ${shift}%)`;
+            blueTeam.style.right = `calc(10% + ${shift}%)`; 
+            
+            // Düğüm Rengi Güncelleme (Kim kazanıyorsa onun rengine döner)
+            if (pos < 45) knotVisual.className = "knot flex items-center justify-center bg-red-500 border-white";
+            else if (pos > 55) knotVisual.className = "knot flex items-center justify-center bg-blue-600 border-white";
+            else knotVisual.className = "knot flex items-center justify-center bg-gray-100 border-gray-400";
         }
 
         function checkWin() {
@@ -454,40 +501,42 @@
             
             if (winner === 'red') {
                 winnerText.textContent = "KIRMIZI KAZANDI";
-                winnerText.className = "text-5xl font-black mb-2 text-red-600 uppercase italic";
-                winnerIcon.className = "text-7xl mb-4 text-red-500 animate-bounce";
+                winnerText.className = "text-4xl md:text-5xl font-black mb-2 text-red-600 uppercase italic";
+                winnerIcon.className = "text-6xl md:text-7xl mb-4 text-red-500 animate-bounce";
             } else {
                 winnerText.textContent = "MAVİ KAZANDI";
-                winnerText.className = "text-5xl font-black mb-2 text-blue-600 uppercase italic";
-                winnerIcon.className = "text-7xl mb-4 text-blue-500 animate-bounce";
+                winnerText.className = "text-4xl md:text-5xl font-black mb-2 text-blue-600 uppercase italic";
+                winnerIcon.className = "text-6xl md:text-7xl mb-4 text-blue-500 animate-bounce";
             }
         }
 
-        // Klavye Kontrolleri
+        // --- KLAVYE DİNLEYİCİSİ ---
         document.addEventListener('keydown', (e) => {
             if (!gameState.isPlaying) return;
             const key = e.key.toLowerCase();
             
-            // Kırmızı (A, S, D)
-            if (['a','s','d'].includes(key)) {
-                const btn = document.querySelector(`button[onclick="handleAnswer('red', '${key === 'a' ? 'der' : key === 's' ? 'die' : 'das'}')"]`);
+            // Buton animasyonlarını tetiklemek için helper
+            const triggerBtn = (team, type) => {
+                // HTML'deki onclick fonksiyonuna göre butonu bul
+                const btn = document.querySelector(`button[onclick="handleAnswer('${team}', '${type}')"]`);
                 if(btn) {
-                    btn.click();
-                    btn.classList.add('scale-95');
-                    setTimeout(()=> btn.classList.remove('scale-95'), 100);
+                    btn.click(); // İşlemi yap
+                    btn.classList.add('scale-90', 'bg-opacity-80'); // Görsel efekt
+                    setTimeout(() => btn.classList.remove('scale-90', 'bg-opacity-80'), 100);
                 }
-            }
+            };
+
+            if (key === 'a') triggerBtn('red', 'der');
+            if (key === 's') triggerBtn('red', 'die');
+            if (key === 'd') triggerBtn('red', 'das');
             
-            // Mavi (J, K, L)
-            if (['j','k','l'].includes(key)) {
-                const btn = document.querySelector(`button[onclick="handleAnswer('blue', '${key === 'j' ? 'der' : key === 'k' ? 'die' : 'das'}')"]`);
-                if(btn) {
-                    btn.click();
-                    btn.classList.add('scale-95');
-                    setTimeout(()=> btn.classList.remove('scale-95'), 100);
-                }
-            }
+            if (key === 'j') triggerBtn('blue', 'der');
+            if (key === 'k') triggerBtn('blue', 'die');
+            if (key === 'l') triggerBtn('blue', 'das');
         });
+
+        // Başlangıç Konumlandırması
+        updateVisuals();
 
     </script>
 </body>
