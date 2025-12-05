@@ -3,407 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Der Die Das - Almanca Artikel Oyunu</title>
+    <title>Almanca Artikel Savaşı: 2 vs 2</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .card-anim {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .card-anim:active {
-            transform: scale(0.95);
-        }
-        .shake {
-            animation: shake 0.5s;
-        }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-        .correct-pop {
-            animation: pop 0.4s;
-        }
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        /* Article specific button styles */
-        .btn-der:hover { background-color: #2563eb; border-color: #1e40af; }
-        .btn-die:hover { background-color: #dc2626; border-color: #991b1b; }
-        .btn-das:hover { background-color: #16a34a; border-color: #166534; }
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
         
-        .hidden-screen {
-            display: none;
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #4ade80;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        /* Halat ve Zemin */
+        .rope-container {
+            position: relative;
+            height: 16px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 60px; /* Karakterlerin el hizasına gelmesi için */
+        }
+
+        .rope {
+            position: absolute;
+            top: 50%;
+            left: 50%; /* JS ile güncellenecek */
+            transform: translate(-50%, -50%);
+            height: 14px;
+            width: 120%; /* Ekrandan taşsın */
+            background: repeating-linear-gradient(45deg, #d4a373, #d4a373 10px, #a98467 10px, #a98467 20px);
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+        }
+
+        .knot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background-color: #ef4444;
+            border: 4px solid #fff;
+            border-radius: 50%;
+            z-index: 20;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        /* Animasyonlu Karakterler (SVG) */
+        .stickman {
+            width: 80px;
+            height: 120px;
+            position: absolute;
+            bottom: -20px; /* Halatın altına hizala */
+            overflow: visible;
+        }
+
+        .stickman-body {
+            transform-origin: 50% 90%; /* Ayaklardan güç al */
+            animation: pull-action 1.5s infinite alternate ease-in-out;
+        }
+
+        .red-team-anim .stickman-body {
+            animation-delay: 0s;
+        }
+        .red-team-anim:nth-child(2) .stickman-body {
+            animation-delay: 0.3s;
+        }
+
+        .blue-team-anim .stickman-body {
+            animation: pull-action-blue 1.5s infinite alternate ease-in-out;
+        }
+        .blue-team-anim:nth-child(2) .stickman-body {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes pull-action {
+            0% { transform: rotate(10deg); }
+            100% { transform: rotate(-20deg); } /* Geriye yaslanma */
+        }
+
+        @keyframes pull-action-blue {
+            0% { transform: scaleX(-1) rotate(10deg); }
+            100% { transform: scaleX(-1) rotate(-20deg); }
+        }
+
+        /* Kart Animasyonları */
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Çim Dokusu */
+        .grass-pattern {
+            background-image: radial-gradient(#86efac 15%, transparent 16%), radial-gradient(#86efac 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            opacity: 0.4;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-white p-4">
+<body class="h-screen w-screen flex flex-col overflow-hidden bg-green-400">
 
-    <!-- START SCREEN -->
-    <div id="start-screen" class="w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl p-8 text-center">
-        <div class="text-6xl mb-4">🇩🇪</div>
-        <h1 class="text-3xl font-black mb-2 text-slate-800">Artikel Ustası</h1>
-        <p class="text-slate-500 mb-8">Kırtasiye & Okul Eşyaları</p>
+    <!-- Arka Plan -->
+    <div class="absolute inset-0 grass-pattern pointer-events-none"></div>
+
+    <!-- Üst Bar -->
+    <header class="z-20 w-full p-2 flex justify-between items-center bg-white/40 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-red-500 animate-pulse"></div>
+            <span class="text-red-700 font-bold text-xl drop-shadow-sm">KIRMIZI</span>
+        </div>
+        <div class="text-white font-black text-2xl tracking-widest drop-shadow-lg bg-black/10 px-6 py-1 rounded-full">ARTIKEL SAVAŞI</div>
+        <div class="flex items-center gap-2">
+            <span class="text-blue-700 font-bold text-xl drop-shadow-sm">MAVİ</span>
+            <div class="w-4 h-4 rounded-full bg-blue-600 animate-pulse"></div>
+        </div>
+    </header>
+
+    <!-- Oyun Alanı (Split Screen Sorular) -->
+    <main class="flex-grow w-full flex flex-col relative z-10">
         
-        <div class="space-y-4">
-            <div>
-                <label class="block text-left text-sm font-bold text-slate-400 mb-1 ml-1">OYUNCU ADI</label>
-                <input type="text" id="username-input" placeholder="Adını yaz..." class="w-full bg-slate-100 border-2 border-slate-200 rounded-xl p-4 font-bold text-lg focus:outline-none focus:border-blue-500 transition-colors" maxlength="12">
-            </div>
+        <!-- Soru Kartları Alanı -->
+        <div class="flex justify-between w-full px-4 md:px-12 mt-4 md:mt-8 gap-4">
             
-            <button onclick="startGame()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500 transform hover:scale-105 transition-all">
-                BAŞLA
-            </button>
+            <!-- Kırmızı Takım Sorusu -->
+            <div id="red-card" class="w-1/2 max-w-md bg-white rounded-3xl border-b-8 border-red-500 shadow-xl p-4 flex flex-col items-center transition-transform">
+                <span class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">KIRMIZI SORU</span>
+                <div id="red-word" class="text-3xl md:text-5xl font-black text-gray-800 text-center break-words">...</div>
+            </div>
+
+            <!-- VS İkonu (Dekoratif) -->
+            <div class="absolute left-1/2 top-16 -translate-x-1/2 hidden md:flex items-center justify-center w-12 h-12 bg-yellow-400 rounded-full font-black text-yellow-800 shadow-lg border-2 border-white">VS</div>
+
+            <!-- Mavi Takım Sorusu -->
+            <div id="blue-card" class="w-1/2 max-w-md bg-white rounded-3xl border-b-8 border-blue-600 shadow-xl p-4 flex flex-col items-center transition-transform">
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">MAVİ SORU</span>
+                <div id="blue-word" class="text-3xl md:text-5xl font-black text-gray-800 text-center break-words">...</div>
+            </div>
         </div>
 
-        <!-- Mini Leaderboard Preview -->
-        <div class="mt-8 pt-6 border-t border-slate-100">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Son Şampiyonlar</h3>
-            <div id="mini-leaderboard" class="space-y-2 text-sm">
-                <!-- Populated by JS -->
+        <!-- Halat ve Karakterler Sahnesi -->
+        <div class="flex-grow flex items-center justify-center relative w-full overflow-hidden">
+            
+            <!-- Orta Çizgi -->
+            <div class="absolute h-full w-2 bg-white/40 left-1/2 -translate-x-1/2 border-l border-r border-white/20 dashed"></div>
+
+            <!-- Kırmızı Takım Karakterleri (Sol) -->
+            <div class="absolute left-[5%] md:left-[15%] top-1/2 -translate-y-1/2 z-10">
+                <!-- Oyuncu 1 -->
+                <svg class="stickman red-team-anim" style="right: 60px;" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="none" stroke="#dc2626" stroke-width="6" /> <!-- Kafa -->
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/> <!-- Gövde -->
+                        <path d="M50 60 L80 80" stroke="#dc2626" stroke-width="6" stroke-linecap="round" /> <!-- Kol -->
+                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#dc2626" stroke-width="6" stroke-linecap="round" /> <!-- Bacaklar -->
+                    </g>
+                </svg>
+                <!-- Oyuncu 2 -->
+                <svg class="stickman red-team-anim" style="right: 0;" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="none" stroke="#ef4444" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 80" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+                    </g>
+                </svg>
             </div>
+
+            <!-- Mavi Takım Karakterleri (Sağ) -->
+            <div class="absolute right-[5%] md:right-[15%] top-1/2 -translate-y-1/2 z-10">
+                <!-- Oyuncu 1 -->
+                <svg class="stickman blue-team-anim" style="left: 0;" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="none" stroke="#2563eb" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 80" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#2563eb" stroke-width="6" stroke-linecap="round" />
+                    </g>
+                </svg>
+                <!-- Oyuncu 2 -->
+                <svg class="stickman blue-team-anim" style="left: 60px;" viewBox="0 0 100 150">
+                    <g class="stickman-body">
+                        <circle cx="50" cy="30" r="15" fill="none" stroke="#3b82f6" stroke-width="6" />
+                        <line x1="50" y1="45" x2="50" y2="100" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M50 60 L80 80" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
+                        <path d="M50 100 L30 140 M50 100 L70 140" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" />
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Halat -->
+            <div class="rope-container w-full mx-0 relative">
+                <div id="rope-visual" class="rope">
+                    <div class="knot flex items-center justify-center">
+                        <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Kontrol Paneli -->
+    <footer class="w-full h-1/3 z-20 flex shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
+        
+        <!-- Kırmızı Kontroller -->
+        <div class="w-1/2 bg-red-50 p-2 md:p-4 flex flex-col justify-center items-center relative border-t-4 border-red-200">
+            <div class="hidden md:block absolute top-2 left-4 text-red-900/40 font-bold text-sm">KLAVYE: A - S - D</div>
+            <div class="grid grid-cols-3 gap-2 w-full max-w-sm h-full max-h-32 md:max-h-40">
+                <button onclick="handleAnswer('red', 'der')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DER<span class="text-[10px] opacity-70 font-normal">Erkek</span></button>
+                <button onclick="handleAnswer('red', 'die')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DIE<span class="text-[10px] opacity-70 font-normal">Dişi</span></button>
+                <button onclick="handleAnswer('red', 'das')" class="active:scale-95 bg-red-500 border-b-4 border-red-800 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-red-600">DAS<span class="text-[10px] opacity-70 font-normal">Nötr</span></button>
+            </div>
+        </div>
+
+        <!-- Mavi Kontroller -->
+        <div class="w-1/2 bg-blue-50 p-2 md:p-4 flex flex-col justify-center items-center relative border-t-4 border-blue-200">
+            <div class="hidden md:block absolute top-2 right-4 text-blue-900/40 font-bold text-sm">KLAVYE: J - K - L</div>
+            <div class="grid grid-cols-3 gap-2 w-full max-w-sm h-full max-h-32 md:max-h-40">
+                <button onclick="handleAnswer('blue', 'der')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DER<span class="text-[10px] opacity-70 font-normal">Erkek</span></button>
+                <button onclick="handleAnswer('blue', 'die')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DIE<span class="text-[10px] opacity-70 font-normal">Dişi</span></button>
+                <button onclick="handleAnswer('blue', 'das')" class="active:scale-95 bg-blue-600 border-b-4 border-blue-900 rounded-xl text-white text-xl md:text-2xl font-black flex flex-col items-center justify-center shadow-lg transition-all hover:bg-blue-700">DAS<span class="text-[10px] opacity-70 font-normal">Nötr</span></button>
+            </div>
+        </div>
+
+    </footer>
+
+    <!-- Oyun Sonu Modal -->
+    <div id="game-over-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 text-center max-w-lg w-full border-8 border-yellow-400 shadow-2xl transform scale-110">
+            <div id="winner-icon" class="text-7xl mb-4 animate-bounce">🏆</div>
+            <h2 id="winner-text" class="text-5xl font-black mb-2 text-gray-800 uppercase italic">KAZANAN</h2>
+            <p class="text-gray-500 font-bold mb-8">Oyun Bitti!</p>
+            <button onclick="startGame()" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-2xl rounded-2xl shadow-[0_6px_0_#15803d] active:translate-y-1 active:shadow-none transition-all">
+                TEKRAR OYNA ↺
+            </button>
         </div>
     </div>
 
-    <!-- GAME CONTAINER -->
-    <div id="game-screen" class="hidden-screen w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
-        
-        <!-- Header / Stats -->
-        <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
-            <div class="flex flex-col items-center w-1/3">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Oyuncu</span>
-                <span id="display-username" class="text-sm font-black text-blue-600 truncate w-full text-center">...</span>
-            </div>
-            <div class="flex flex-col items-center w-1/3 border-x border-slate-200">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Skor</span>
-                <span id="score" class="text-2xl font-black text-slate-700">0</span>
-            </div>
-            <div class="flex flex-col items-center w-1/3">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Seri</span>
-                <span id="streak" class="text-2xl font-black text-orange-500">0</span>
-            </div>
-        </div>
-
-        <!-- Question Area -->
-        <div class="p-8 flex flex-col items-center justify-center min-h-[250px] relative" id="card-area">
-            <div id="icon-display" class="text-6xl mb-4 transition-all duration-300">✏️</div>
-            <h1 id="word-display" class="text-4xl font-black mb-2 text-slate-800 text-center tracking-tight">Bleistift</h1>
-            <p id="translation-display" class="text-slate-500 font-medium text-lg bg-slate-100 px-3 py-1 rounded-full">Kurşun Kalem</p>
+    <!-- Başlangıç Modal -->
+    <div id="start-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 text-center max-w-lg w-full border-b-8 border-blue-500 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-red-500 to-blue-500"></div>
+            <h1 class="text-6xl font-black mb-1 text-gray-800 tracking-tighter">ARTIKEL</h1>
+            <h1 class="text-6xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-600 tracking-tighter">SAVAŞI</h1>
             
-            <!-- Result Overlay -->
-            <div id="result-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center hidden z-10 rounded-xl">
-                <div id="result-icon" class="text-6xl mb-2">✅</div>
-                <h2 id="result-title" class="text-2xl font-bold mb-1">Doğru!</h2>
-                <p id="result-message" class="text-slate-600">Cevap: <span class="font-bold">Der</span> Bleistift</p>
-                <button onclick="nextQuestion()" class="mt-6 bg-slate-800 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-slate-700 transition transform hover:scale-105 active:scale-95">
-                    Devam Et ->
-                </button>
+            <div class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-200 text-left space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="bg-red-100 text-red-600 font-bold px-2 py-1 rounded text-xs">SOL TAKIM</span>
+                    <p class="text-sm text-gray-600">Kendi sorusunu çözer. <br><span class="font-bold">Tuşlar:</span> A, S, D</p>
+                </div>
+                <div class="w-full h-px bg-gray-200"></div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-blue-100 text-blue-600 font-bold px-2 py-1 rounded text-xs">SAĞ TAKIM</span>
+                    <p class="text-sm text-gray-600">Kendi sorusunu çözer. <br><span class="font-bold">Tuşlar:</span> J, K, L</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Progress Bar -->
-        <div class="w-full h-2 bg-slate-100">
-            <div id="timer-bar" class="h-full bg-blue-500 w-full transition-all duration-1000 ease-linear"></div>
-        </div>
-
-        <!-- Controls -->
-        <div class="p-6 grid grid-cols-3 gap-3 bg-slate-50">
-            <button onclick="checkAnswer('der')" class="card-anim btn-der h-24 rounded-xl bg-blue-100 border-b-4 border-blue-500 text-blue-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">ERKEK</span>
-                <span class="group-hover:text-white">DER</span>
-            </button>
-            <button onclick="checkAnswer('die')" class="card-anim btn-die h-24 rounded-xl bg-red-100 border-b-4 border-red-500 text-red-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">DİŞİ</span>
-                <span class="group-hover:text-white">DIE</span>
-            </button>
-            <button onclick="checkAnswer('das')" class="card-anim btn-das h-24 rounded-xl bg-green-100 border-b-4 border-green-500 text-green-600 font-black text-xl flex flex-col items-center justify-center group transition-colors">
-                <span class="text-sm font-medium opacity-60 mb-1 group-hover:text-white">NÖTR</span>
-                <span class="group-hover:text-white">DAS</span>
+            <button onclick="startGame()" class="w-full py-5 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white font-black text-3xl rounded-2xl shadow-[0_6px_0_#c2410c] active:translate-y-1 active:shadow-none transition-all transform hover:scale-[1.02]">
+                BAŞLA!
             </button>
         </div>
-        
-        <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-center">
-            <button onclick="endGame()" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-widest border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors">
-                Oyunu Bitir ve Kaydet
-            </button>
-        </div>
-    </div>
-
-    <!-- LEADERBOARD SCREEN -->
-    <div id="leaderboard-screen" class="hidden-screen w-full max-w-md bg-white text-slate-800 rounded-3xl shadow-2xl p-8 text-center relative">
-        <div class="text-6xl mb-4">🏆</div>
-        <h2 class="text-2xl font-black text-slate-800 mb-1">Oyun Bitti!</h2>
-        <p class="text-slate-500 mb-6">Tebrikler <span id="final-username" class="font-bold text-slate-800"></span></p>
-
-        <div class="bg-blue-50 rounded-xl p-4 mb-6">
-            <span class="text-sm text-blue-400 font-bold uppercase block mb-1">TOPLAM SKOR</span>
-            <span id="final-score" class="text-5xl font-black text-blue-600">0</span>
-        </div>
-
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-left">Liderlik Tablosu</h3>
-        <div id="full-leaderboard" class="space-y-2 mb-8 max-h-48 overflow-y-auto">
-            <!-- Populated by JS -->
-        </div>
-
-        <button onclick="resetGame()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black text-xl shadow-lg hover:bg-slate-700 transform hover:scale-105 transition-all">
-            TEKRAR OYNA
-        </button>
     </div>
 
     <script>
-        // Database
-        const wordDatabase = [
-            // DER (Masculine)
-            { word: 'Bleistift', art: 'der', tr: 'Kurşun Kalem', icon: '✏️' },
-            { word: 'Kugelschreiber', art: 'der', tr: 'Tükenmez Kalem', icon: '🖊️' },
-            { word: 'Radiergummi', art: 'der', tr: 'Silgi', icon: '🧼' },
-            { word: 'Spitzer', art: 'der', tr: 'Kalemtraş', icon: '⚙️' },
-            { word: 'Rucksack', art: 'der', tr: 'Sırt Çantası', icon: '🎒' },
-            { word: 'Marker', art: 'der', tr: 'Keçeli Kalem', icon: '🖍️' },
-            { word: 'Ordner', art: 'der', tr: 'Klasör', icon: '📁' },
-            { word: 'Klebstoff', art: 'der', tr: 'Yapıştırıcı', icon: '🧴' },
-            { word: 'Rechner', art: 'der', tr: 'Hesap Makinesi', icon: '🧮' },
-            { word: 'Pinsel', art: 'der', tr: 'Fırça', icon: '🖌️' },
-            // DIE (Feminine)
-            { word: 'Schere', art: 'die', tr: 'Makas', icon: '✂️' },
-            { word: 'Tasche', art: 'die', tr: 'Çanta', icon: '👜' },
-            { word: 'Schultasche', art: 'die', tr: 'Okul Çantası', icon: '🎒' },
-            { word: 'Tafel', art: 'die', tr: 'Yazı Tahtası', icon: '🏫' },
-            { word: 'Landkarte', art: 'die', tr: 'Harita', icon: '🗺️' },
-            { word: 'Mappe', art: 'die', tr: 'Dosya', icon: '📂' },
-            { word: 'Kreide', art: 'die', tr: 'Tebeşir', icon: '⚪' },
-            { word: 'Schule', art: 'die', tr: 'Okul', icon: '🏫' },
-            { word: 'Bibliothek', art: 'die', tr: 'Kütüphane', icon: '📚' },
-            { word: 'Pause', art: 'die', tr: 'Teneffüs', icon: '🔔' },
-            // DAS (Neutral)
-            { word: 'Buch', art: 'das', tr: 'Kitap', icon: '📖' },
-            { word: 'Heft', art: 'das', tr: 'Defter', icon: '📓' },
-            { word: 'Papier', art: 'das', tr: 'Kağıt', icon: '📄' },
-            { word: 'Lineal', art: 'das', tr: 'Cetvel', icon: '📏' },
-            { word: 'Mäppchen', art: 'das', tr: 'Kalemlik', icon: '👝' },
-            { word: 'Bild', art: 'das', tr: 'Resim', icon: '🖼️' },
-            { word: 'Wörterbuch', art: 'das', tr: 'Sözlük', icon: '📕' },
-            { word: 'Zeugnis', art: 'das', tr: 'Karne', icon: '📜' },
-            { word: 'Gymnasium', art: 'das', tr: 'Lise', icon: '🏛️' },
-            { word: 'Klassenzimmer', art: 'das', tr: 'Sınıf', icon: '🚪' }
+        // Veritabanı
+        const words = [
+            { word: "Apfel", article: "der" }, { word: "Baum", article: "der" }, { word: "Hund", article: "der" },
+            { word: "Tisch", article: "der" }, { word: "Stuhl", article: "der" }, { word: "Vater", article: "der" },
+            { word: "Mond", article: "der" }, { word: "Löffel", article: "der" }, { word: "Computer", article: "der" },
+            { word: "Wagen", article: "der" }, { word: "Ball", article: "der" }, { word: "Schlüssel", article: "der" },
+            
+            { word: "Katze", article: "die" }, { word: "Sonne", article: "die" }, { word: "Blume", article: "die" },
+            { word: "Frau", article: "die" }, { word: "Mutter", article: "die" }, { word: "Lampe", article: "die" },
+            { word: "Banane", article: "die" }, { word: "Schule", article: "die" }, { word: "Tasche", article: "die" },
+            { word: "Brille", article: "die" }, { word: "Uhr", article: "die" }, { word: "Tür", article: "die" },
+            
+            { word: "Haus", article: "das" }, { word: "Buch", article: "das" }, { word: "Auto", article: "das" },
+            { word: "Kind", article: "das" }, { word: "Wasser", article: "das" }, { word: "Brot", article: "das" },
+            { word: "Fenster", article: "das" }, { word: "Bett", article: "das" }, { word: "Spiel", article: "das" },
+            { word: "Handy", article: "das" }, { word: "Bild", article: "das" }, { word: "Geld", article: "das" }
         ];
 
-        // State Variables
-        let currentDeck = []; // To prevent repeats
-        let currentWordObj = null;
-        let score = 0;
-        let streak = 0;
-        let gameActive = false;
-        let userName = "";
-
-        // Elements
-        const screens = {
-            start: document.getElementById('start-screen'),
-            game: document.getElementById('game-screen'),
-            leaderboard: document.getElementById('leaderboard-screen')
+        let gameState = {
+            isPlaying: false,
+            ropePosition: 50, // 50 = merkez
+            redWord: null,
+            blueWord: null,
         };
-        const elUsernameInput = document.getElementById('username-input');
-        const elDisplayUsername = document.getElementById('display-username');
-        const elWord = document.getElementById('word-display');
-        const elTranslation = document.getElementById('translation-display');
-        const elIcon = document.getElementById('icon-display');
-        const elScore = document.getElementById('score');
-        const elStreak = document.getElementById('streak');
-        const elOverlay = document.getElementById('result-overlay');
-        const elResultTitle = document.getElementById('result-title');
-        const elResultMessage = document.getElementById('result-message');
-        const elResultIcon = document.getElementById('result-icon');
-        const elCardArea = document.getElementById('card-area');
 
-        // --- GAME LOGIC ---
+        const ropeVisual = document.getElementById('rope-visual');
+        const redCard = document.getElementById('red-card');
+        const blueCard = document.getElementById('blue-card');
+        const redWordDisplay = document.getElementById('red-word');
+        const blueWordDisplay = document.getElementById('blue-word');
+
+        // Ses Efektleri
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                osc.frequency.setValueAtTime(1046.50, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            }
+        }
 
         function startGame() {
-            const name = elUsernameInput.value.trim();
-            if (!name) {
-                alert("Lütfen bir isim gir!");
-                return;
+            document.getElementById('start-modal').classList.add('hidden');
+            document.getElementById('game-over-modal').classList.add('hidden');
+            
+            gameState.isPlaying = true;
+            gameState.ropePosition = 50;
+            
+            updateRopeVisual();
+            newWordFor('red');
+            newWordFor('blue');
+        }
+
+        function newWordFor(team) {
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            
+            if (team === 'red') {
+                gameState.redWord = randomWord;
+                redWordDisplay.innerText = randomWord.word;
+                redCard.classList.remove('shake');
+                redCard.classList.add('pop-in');
+                setTimeout(() => redCard.classList.remove('pop-in'), 300);
+            } else {
+                gameState.blueWord = randomWord;
+                blueWordDisplay.innerText = randomWord.word;
+                blueCard.classList.remove('shake');
+                blueCard.classList.add('pop-in');
+                setTimeout(() => blueCard.classList.remove('pop-in'), 300);
             }
-            userName = name;
-            elDisplayUsername.innerText = userName;
-
-            // Reset game state
-            score = 0;
-            streak = 0;
-            updateStats();
-            
-            // Initialize fresh deck
-            resetDeck();
-
-            // Switch screens
-            switchScreen('game');
-            nextQuestion();
         }
 
-        function resetDeck() {
-            // Create a shallow copy of the full database
-            currentDeck = [...wordDatabase];
-        }
+        function handleAnswer(team, answer) {
+            if (!gameState.isPlaying) return;
 
-        function getNextWordFromDeck() {
-            // If deck is empty, refill it (Endless mode)
-            if (currentDeck.length === 0) {
-                resetDeck();
-            }
-
-            // Pick a random index from the current deck
-            const randomIndex = Math.floor(Math.random() * currentDeck.length);
-            
-            // Remove that word from the deck and return it
-            // splice returns an array, so we take [0]
-            const selectedWord = currentDeck.splice(randomIndex, 1)[0];
-            
-            return selectedWord;
-        }
-
-        function nextQuestion() {
-            elOverlay.classList.add('hidden');
-            gameActive = true;
-            
-            currentWordObj = getNextWordFromDeck();
-            
-            // Update UI
-            elWord.innerText = currentWordObj.word;
-            elTranslation.innerText = currentWordObj.tr;
-            elIcon.innerText = currentWordObj.icon;
-            
-            // Reset animations
-            elCardArea.classList.remove('shake');
-            elIcon.classList.remove('correct-pop');
-        }
-
-        function checkAnswer(selectedArticle) {
-            if (!gameActive) return;
-            gameActive = false;
-
-            const isCorrect = selectedArticle === currentWordObj.art;
-            const correctArticle = currentWordObj.art.charAt(0).toUpperCase() + currentWordObj.art.slice(1);
+            const targetWord = (team === 'red') ? gameState.redWord : gameState.blueWord;
+            const isCorrect = answer === targetWord.article;
 
             if (isCorrect) {
-                score += 10 + (streak * 2);
-                streak++;
+                playSound('correct');
                 
-                elResultIcon.innerText = "🎉";
-                elResultTitle.innerText = "Harika!";
-                elResultTitle.className = "text-3xl font-black mb-1 text-green-600";
-                elResultMessage.innerHTML = `Doğru cevap: <span class="font-bold text-green-600">${correctArticle}</span> ${currentWordObj.word}`;
-                elIcon.classList.add('correct-pop');
-                
-                updateStats();
-                setTimeout(() => showOverlay(), 400);
+                // Halatı hareket ettir
+                if (team === 'red') {
+                    gameState.ropePosition -= 7; // Kırmızıya çek
+                } else {
+                    gameState.ropePosition += 7; // Maviye çek
+                }
+
+                // Bildiği için yeni kelime ver
+                newWordFor(team);
             } else {
-                streak = 0;
+                playSound('wrong');
                 
-                elResultIcon.innerText = "😔";
-                elResultTitle.innerText = "Yanlış...";
-                elResultTitle.className = "text-3xl font-black mb-1 text-red-600";
-                
-                let colorClass = "text-slate-800";
-                if(currentWordObj.art === 'der') colorClass = "text-blue-600";
-                if(currentWordObj.art === 'die') colorClass = "text-red-600";
-                if(currentWordObj.art === 'das') colorClass = "text-green-600";
+                // Yanlış cevap cezası (Hafifçe karşıya iter)
+                if (team === 'red') {
+                    gameState.ropePosition += 3;
+                    redCard.classList.remove('shake');
+                    void redCard.offsetWidth;
+                    redCard.classList.add('shake');
+                } else {
+                    gameState.ropePosition -= 3;
+                    blueCard.classList.remove('shake');
+                    void blueCard.offsetWidth;
+                    blueCard.classList.add('shake');
+                }
+            }
 
-                elResultMessage.innerHTML = `Doğrusu: <span class="font-bold ${colorClass}">${correctArticle}</span> ${currentWordObj.word}`;
-                elCardArea.classList.add('shake');
-                
-                updateStats();
-                setTimeout(() => showOverlay(), 500);
+            updateRopeVisual();
+            checkWin();
+        }
+
+        function updateRopeVisual() {
+            // Sınırları kontrol et (görsel olarak halatın ekrandan kopmaması için)
+            let visualPos = Math.max(0, Math.min(100, gameState.ropePosition));
+            ropeVisual.style.left = visualPos + '%';
+        }
+
+        function checkWin() {
+            if (gameState.ropePosition <= 10) {
+                endGame('red');
+            } else if (gameState.ropePosition >= 90) {
+                endGame('blue');
             }
         }
 
-        function updateStats() {
-            elScore.innerText = score;
-            elStreak.innerText = streak + " 🔥";
-        }
-
-        function showOverlay() {
-            elOverlay.classList.remove('hidden');
-        }
-
-        // --- LEADERBOARD & END GAME ---
-
-        function endGame() {
-            saveScore(userName, score);
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('final-username').innerText = userName;
-            renderLeaderboard('full-leaderboard');
-            switchScreen('leaderboard');
-        }
-
-        function resetGame() {
-            elUsernameInput.value = ""; // Clear name or keep it? Let's clear for new player
-            renderLeaderboard('mini-leaderboard');
-            switchScreen('start');
-        }
-
-        function saveScore(name, score) {
-            if(score === 0) return; // Don't save 0 scores
-
-            let scores = JSON.parse(localStorage.getItem('artikelGameScores')) || [];
-            scores.push({ name: name, score: score, date: new Date().toLocaleDateString() });
+        function endGame(winner) {
+            gameState.isPlaying = false;
+            playSound('win');
             
-            // Sort desc
-            scores.sort((a, b) => b.score - a.score);
+            const modal = document.getElementById('game-over-modal');
+            const winnerText = document.getElementById('winner-text');
+            const winnerIcon = document.getElementById('winner-icon');
             
-            // Keep top 10
-            scores = scores.slice(0, 10);
+            modal.classList.remove('hidden');
             
-            localStorage.setItem('artikelGameScores', JSON.stringify(scores));
-        }
-
-        function renderLeaderboard(elementId) {
-            const container = document.getElementById(elementId);
-            const scores = JSON.parse(localStorage.getItem('artikelGameScores')) || [];
-            
-            container.innerHTML = "";
-            
-            if (scores.length === 0) {
-                container.innerHTML = "<div class='text-slate-400 italic text-center'>Henüz kayıtlı skor yok. İlk sen ol!</div>";
-                return;
+            if (winner === 'red') {
+                winnerText.textContent = "KIRMIZI KAZANDI";
+                winnerText.className = "text-5xl font-black mb-2 text-red-600 uppercase italic";
+                winnerIcon.className = "text-7xl mb-4 text-red-500 animate-bounce";
+            } else {
+                winnerText.textContent = "MAVİ KAZANDI";
+                winnerText.className = "text-5xl font-black mb-2 text-blue-600 uppercase italic";
+                winnerIcon.className = "text-7xl mb-4 text-blue-500 animate-bounce";
             }
-
-            scores.forEach((s, index) => {
-                const isTop = index === 0 ? "bg-yellow-100 border-yellow-200" : "bg-slate-50 border-slate-100";
-                const rankIcon = index === 0 ? "👑" : (index + 1) + ".";
-                
-                const html = `
-                    <div class="flex justify-between items-center p-3 rounded-lg border ${isTop}">
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-slate-400 w-6 text-center">${rankIcon}</span>
-                            <span class="font-bold text-slate-700">${s.name}</span>
-                        </div>
-                        <span class="font-black text-blue-600">${s.score}</span>
-                    </div>
-                `;
-                container.innerHTML += html;
-            });
         }
 
-        function switchScreen(screenName) {
-            Object.values(screens).forEach(el => el.classList.add('hidden-screen'));
-            screens[screenName].classList.remove('hidden-screen');
-        }
-
-        // Init
-        renderLeaderboard('mini-leaderboard');
+        // Klavye Kontrolleri
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.isPlaying) return;
+            const key = e.key.toLowerCase();
+            
+            // Kırmızı (A, S, D)
+            if (['a','s','d'].includes(key)) {
+                const btn = document.querySelector(`button[onclick="handleAnswer('red', '${key === 'a' ? 'der' : key === 's' ? 'die' : 'das'}')"]`);
+                if(btn) {
+                    btn.click();
+                    btn.classList.add('scale-95');
+                    setTimeout(()=> btn.classList.remove('scale-95'), 100);
+                }
+            }
+            
+            // Mavi (J, K, L)
+            if (['j','k','l'].includes(key)) {
+                const btn = document.querySelector(`button[onclick="handleAnswer('blue', '${key === 'j' ? 'der' : key === 'k' ? 'die' : 'das'}')"]`);
+                if(btn) {
+                    btn.click();
+                    btn.classList.add('scale-95');
+                    setTimeout(()=> btn.classList.remove('scale-95'), 100);
+                }
+            }
+        });
 
     </script>
 </body>
